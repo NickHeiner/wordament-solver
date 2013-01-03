@@ -23,4 +23,6 @@ let rec add items (Node (isValid, children)) =
     
 let add' trie items = add items trie
 
-let addAll trie seqs = List.fold add' empty seqs
+let addAll trie seqs = Seq.fold add' trie seqs
+
+let addAll' seqs trie = addAll trie seqs

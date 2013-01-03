@@ -1,12 +1,17 @@
-﻿// Learn more about F# at http://fsharp.net
-// See the 'F# Tutorial' project for more help.
+﻿
 module Program
+
+open System.IO
 
 [<EntryPoint>]
 let main argv = 
     let dict = 
-        System.IO.File.ReadLines argv.[1] 
-        |> (Seq.map (fun str -> [for char in str -> char]))
+        File.ReadLines argv.[0] 
+        |> (Seq.map (fun str -> str.ToCharArray () |> Array.toList))
         |> Trie.addAll Trie.empty 
+
+    printf "Read dictionary with %A entries" <| Trie.count dict
+
+    ignore <| System.Console.ReadLine ()
 
     0

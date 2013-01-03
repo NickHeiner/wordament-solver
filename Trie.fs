@@ -26,3 +26,11 @@ let add' trie items = add items trie
 let addAll trie seqs = Seq.fold add' trie seqs
 
 let addAll' seqs trie = addAll trie seqs
+
+let rec count (Node (isValid, children)) = 
+    (if isValid then 1 else 0)
+        +
+    (children
+    |> Map.toList
+    |> List.map (snd >> count)
+    |> List.fold (+) 0)

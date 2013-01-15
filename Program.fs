@@ -49,6 +49,8 @@ let wordsStartingFrom grid isValidWord isValidPrefix coord =
         seq {
             let soFarSet = Set.ofSeq soFar
             let currPrefix = (List.map (fun coords -> Map.find coords grid) soFar)
+            if isValidWord currPrefix 
+            then yield currPrefix
             if isValidPrefix currPrefix
             then yield! neighborsOf grid row col 
                 |> Seq.filter (fun coord -> not <| Set.contains coord soFarSet)
@@ -56,12 +58,20 @@ let wordsStartingFrom grid isValidWord isValidPrefix coord =
                 |> Seq.concat
         }
     wordsStartingFromWith [] coord
+    |> Set.ofSeq
+    |> Set.toSeq
 
 let findWords isValidWord isValidPrefix grid = 
     grid
     |> Map.toSeq
     |> Seq.map (fst >> (wordsStartingFrom grid isValidWord isValidPrefix))
     |> Seq.concat
+
+// from http://fssnip.net/5u
+let implode (xs:char list) =    
+    let sb = System.Text.StringBuilder(xs.Length)
+    xs |> List.iter (sb.Append >> ignore)
+    sb.ToString()
 
 [<EntryPoint>]
 let main argv = 
@@ -73,8 +83,13 @@ let main argv =
     printfn "Read grid: "
     Map.iter (fun (row, col) char -> printfn "(%d, %d): %c" row col char) grid
 
-    let words = findWords (Trie.isValidSeq dict) (Trie.isValidPrefix dict) grid
+    let words = 
+        findWords (Trie.isValidSeq dict) (Trie.isValidPrefix dict) grid
+        |> Seq.map implode
     printfn "Found %d words: " <| Seq.length words
+
+    ignore <| System.Console.ReadLine ()
+
     Seq.iter (printfn "%s") words
 
     ignore <| System.Console.ReadLine ()

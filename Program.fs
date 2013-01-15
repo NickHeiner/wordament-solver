@@ -20,7 +20,48 @@ let readGrid =
     >> Seq.concat
     >> Map.ofSeq
 
-let findWords grid dict = []
+let neighborsOf grid row col =
+    let findBound getCoordMember search = 
+        grid 
+        |> Map.toSeq
+        |> Seq.map fst 
+        |> Seq.map getCoordMember 
+        |> search
+    let maxRow = findBound fst Seq.max
+    let minRow = findBound fst Seq.min
+    let maxCol = findBound snd Seq.max
+    let minCol = findBound snd Seq.min
+
+    seq {for rowOffset in -1 .. 1 do
+            for colOffset in -1 .. 1 do
+                yield row + rowOffset, col + colOffset}
+    |> Seq.filter (fun (row, col) -> minRow <= row && row <= maxRow && minCol <= col && col <= maxCol)
+
+let rec f num = 
+    seq {
+        if num = 0
+        then yield num
+        else yield! Seq.concat [f (num - 1); f (num - 2)]
+    }
+
+let wordsStartingFrom grid isValidWord isValidPrefix coord = 
+    let rec wordsStartingFromWith soFar (row, col) =
+        seq {
+            let soFarSet = Set.ofSeq soFar
+            let currPrefix = (List.map (fun coords -> Map.find coords grid) soFar)
+            if isValidPrefix currPrefix
+            then yield! neighborsOf grid row col 
+                |> Seq.filter (fun coord -> not <| Set.contains coord soFarSet)
+                |> Seq.map (wordsStartingFromWith ((row, col)::soFar)) 
+                |> Seq.concat
+        }
+    wordsStartingFromWith [] coord
+
+let findWords isValidWord isValidPrefix grid = 
+    grid
+    |> Map.toSeq
+    |> Seq.map (fst >> (wordsStartingFrom grid isValidWord isValidPrefix))
+    |> Seq.concat
 
 [<EntryPoint>]
 let main argv = 
@@ -32,9 +73,9 @@ let main argv =
     printfn "Read grid: "
     Map.iter (fun (row, col) char -> printfn "(%d, %d): %c" row col char) grid
 
-    let words = findWords grid dict
+    let words = findWords (Trie.isValidSeq dict) (Trie.isValidPrefix dict) grid
     printfn "Found %d words: " <| Seq.length words
-    Seq.iter printfn words
+    Seq.iter (printfn "%s") words
 
     ignore <| System.Console.ReadLine ()
 

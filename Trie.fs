@@ -27,6 +27,24 @@ let addAll trie seqs = Seq.fold add' trie seqs
 
 let addAll' seqs trie = addAll trie seqs
 
+(* This is not quite right... *)
+
+let rec isValidSeq (Node (isValid, children)) = function
+    | [] -> isValid
+    | hd::tl -> if Map.containsKey hd children
+                then isValidSeq (Map.find hd children) tl
+                else false
+
+let isValidSeq' items trie = isValidSeq trie items
+
+let rec isValidPrefix (Node (isValid, children)) = function
+    | [] -> true
+    | hd::tl -> if Map.containsKey hd children
+                then isValidPrefix (Map.find hd children) tl
+                else false
+
+let isValidPrefix' items trie = isValidPrefix trie items
+
 let rec count (Node (isValid, children)) = 
     (if isValid then 1 else 0)
         +

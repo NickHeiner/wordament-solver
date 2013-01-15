@@ -37,13 +37,6 @@ let neighborsOf grid row col =
                 yield row + rowOffset, col + colOffset}
     |> Seq.filter (fun (row, col) -> minRow <= row && row <= maxRow && minCol <= col && col <= maxCol)
 
-let rec f num = 
-    seq {
-        if num = 0
-        then yield num
-        else yield! Seq.concat [f (num - 1); f (num - 2)]
-    }
-
 let wordsStartingFrom grid isValidWord isValidPrefix coord = 
     let rec wordsStartingFromWith soFar (row, col) =
         seq {
